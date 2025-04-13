@@ -1,3 +1,8 @@
+// Configure the API URL based on the environment
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? '' // Use relative URL for local development
+    : 'https://your-backend-url.herokuapp.com'; // Replace with your deployed backend URL
+
 var map = L.map('map').setView([37.0902, -95.7129], 4);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
@@ -88,11 +93,10 @@ map.on('click', function(e) {
 
 async function updatePrediction(latlng) {
     try {
-        // Show loading indicator
         const loadingElement = document.getElementById('loading');
         loadingElement.classList.add('show');
 
-        const response = await fetch('/predict', {
+        const response = await fetch(`${API_URL}/predict`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -104,11 +108,10 @@ async function updatePrediction(latlng) {
             })
         });
 
-        // Hide loading indicator
         loadingElement.classList.remove('show');
 
         if (!response.ok) {
-            throw new Error('Server returned an error');
+            throw new Error(`Server returned ${response.status} ${response.statusText}`);
         }
 
         const data = await response.json();
@@ -139,8 +142,7 @@ async function updatePrediction(latlng) {
         `;
         currentMarker.bindPopup(popupContent).openPopup();
     } catch (error) {
-        // Hide loading indicator on error
-        document.getElementById('loading').classList.remove('show');
+        loadingElement.classList.remove('show');
         console.error('Error:', error);
         showError(`Failed to get prediction: ${error.message}`);
         document.getElementById('prediction').innerHTML = `

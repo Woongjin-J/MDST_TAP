@@ -60,10 +60,14 @@ except Exception as e:
     exit(1)
 
 # Create Flask app
-app = Flask(__name__, static_folder='static')
+app = Flask(__name__, static_url_path='')
 CORS(app, resources={
     r"/*": {
-        "origins": "*",
+        "origins": [
+            "http://localhost:5000",
+            "http://127.0.0.1:5000",
+            "https://woongjin-j.github.io"  # Replace with your GitHub Pages domain
+        ],
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type"]
     }
