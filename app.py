@@ -63,15 +63,20 @@ except Exception as e:
 app = Flask(__name__, static_url_path='')
 CORS(app, resources={
     r"/*": {
-        "origins": [
-            "http://localhost:5000",
-            "http://127.0.0.1:5000",
-            "https://woongjin-j.github.io"  # Replace with your GitHub Pages domain
-        ],
+        "origins": "*",  # Allow all origins for now
         "methods": ["GET", "POST", "OPTIONS"],
-        "allow_headers": ["Content-Type"]
+        "allow_headers": ["Content-Type", "Authorization", "Access-Control-Allow-Origin"],
+        "expose_headers": ["Access-Control-Allow-Origin"],
+        "supports_credentials": True
     }
 })
+
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
 
 def get_road_info(lat, lon):
     try:

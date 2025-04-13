@@ -1,7 +1,7 @@
 // Configure the API URL based on the environment
 const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? '' // Use relative URL for local development
-    : 'https://your-backend-url.herokuapp.com'; // Replace with your deployed backend URL
+    : 'http://overpass-api.de/api/interpreter'; // Replace with your actual backend URL
 
 var map = L.map('map').setView([37.0902, -95.7129], 4);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -13,7 +13,7 @@ var features = {
     'Traffic_Signal_Flag': 0,
     'Crossing_Flag': 0,
     'Highway_Flag': 1,
-    'Distance(mi)': 1.0,
+    'Distance(mi)': 0.1,
     'Start_Hour': 12,
     'Start_Month': 6,
     'Accident_Duration': 5
@@ -23,32 +23,43 @@ let updateTimer = null;
 
 function showError(message) {
     const errorDiv = document.getElementById('error-message');
-    errorDiv.textContent = message;
-    errorDiv.style.display = 'block';
-    setTimeout(() => {
-        errorDiv.style.display = 'none';
-    }, 5000);
+    if (errorDiv) {
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+        }, 5000);
+    }
+    console.error(message);
+}
+
+function showLoading(show = true) {
+    const loadingElement = document.getElementById('loading');
+    if (loadingElement) {
+        if (show) {
+            loadingElement.classList.add('show');
+        } else {
+            loadingElement.classList.remove('show');
+        }
+    }
 }
 
 function updateRoadTypeDisplay(roadType, roadName) {
-    // Update Highway Flag toggle only
     const highwayToggle = document.getElementById('Highway_Flag');
-    const newValue = roadType === 'Highway' ? 1 : 0;
-    highwayToggle.checked = newValue === 1;
-    features['Highway_Flag'] = newValue;
+    if (highwayToggle) {
+        const newValue = roadType === 'Highway' ? 1 : 0;
+        highwayToggle.checked = newValue === 1;
+        features['Highway_Flag'] = newValue;
+    }
 }
 
 // Update toggle values and handle changes
 document.querySelectorAll('.toggle-switch input').forEach(toggle => {
     toggle.addEventListener('change', function() {
         features[this.id] = this.checked ? 1 : 0;
-
-        // Clear any existing timer
         if (updateTimer) {
             clearTimeout(updateTimer);
         }
-
-        // Set a new timer to update prediction after 500ms
         if (currentMarker) {
             updateTimer = setTimeout(() => {
                 updatePrediction(currentMarker.getLatLng());
@@ -60,19 +71,19 @@ document.querySelectorAll('.toggle-switch input').forEach(toggle => {
 // Update slider values display and handle changes
 document.querySelectorAll('.slider').forEach(slider => {
     const valueDisplay = document.getElementById(slider.id + '_value');
-    valueDisplay.textContent = slider.value;
+    if (valueDisplay) {
+        valueDisplay.textContent = slider.value;
+    }
 
     slider.addEventListener('input', function() {
         const value = this.value;
-        valueDisplay.textContent = value;
+        if (valueDisplay) {
+            valueDisplay.textContent = value;
+        }
         features[this.id] = parseFloat(value);
-
-        // Clear any existing timer
         if (updateTimer) {
             clearTimeout(updateTimer);
         }
-
-        // Set a new timer to update prediction after 500ms of no slider movement
         if (currentMarker) {
             updateTimer = setTimeout(() => {
                 updatePrediction(currentMarker.getLatLng());
@@ -93,14 +104,15 @@ map.on('click', function(e) {
 
 async function updatePrediction(latlng) {
     try {
-        const loadingElement = document.getElementById('loading');
-        loadingElement.classList.add('show');
+        showLoading(true);
 
         const response = await fetch(`${API_URL}/predict`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
+            mode: 'cors',
             body: JSON.stringify({
                 ...features,
                 lat: latlng.lat,
@@ -108,7 +120,7 @@ async function updatePrediction(latlng) {
             })
         });
 
-        loadingElement.classList.remove('show');
+        showLoading(false);
 
         if (!response.ok) {
             throw new Error(`Server returned ${response.status} ${response.statusText}`);
@@ -123,17 +135,18 @@ async function updatePrediction(latlng) {
         const severityText = ['Low', 'Medium', 'High', 'Very High'][severity - 1];
         const severityClass = severity > 2 ? 'severity-high' : severity === 2 ? 'severity-medium' : 'severity-low';
 
-        // Update Highway Flag based on road type
         updateRoadTypeDisplay(data.road_type, data.road_name);
 
-        // Update prediction display
-        document.getElementById('prediction').innerHTML = `
-            <h3>Current Prediction</h3>
-            <p>Location: ${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)}</p>
-            <p>Road Type: <span class="${data.road_type === 'Highway' ? 'highway' : data.road_type === 'Local Road' ? 'local-road' : 'unknown-road'}">${data.road_type}</span></p>
-            <p>Road Name: ${data.road_name}</p>
-            <p>Severity: <span class="${severityClass}">${severityText}</span></p>
-        `;
+        const predictionElement = document.getElementById('prediction');
+        if (predictionElement) {
+            predictionElement.innerHTML = `
+                <h3>Current Prediction</h3>
+                <p>Location: ${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)}</p>
+                <p>Road Type: <span class="${data.road_type === 'Highway' ? 'highway' : data.road_type === 'Local Road' ? 'local-road' : 'unknown-road'}">${data.road_type}</span></p>
+                <p>Road Name: ${data.road_name}</p>
+                <p>Severity: <span class="${severityClass}">${severityText}</span></p>
+            `;
+        }
 
         const popupContent = `
             <strong>Road Type:</strong> ${data.road_type}<br>
@@ -142,12 +155,15 @@ async function updatePrediction(latlng) {
         `;
         currentMarker.bindPopup(popupContent).openPopup();
     } catch (error) {
-        loadingElement.classList.remove('show');
+        showLoading(false);
         console.error('Error:', error);
         showError(`Failed to get prediction: ${error.message}`);
-        document.getElementById('prediction').innerHTML = `
-            <h3>Error</h3>
-            <p>Failed to get prediction. Please try again.</p>
-        `;
+        const predictionElement = document.getElementById('prediction');
+        if (predictionElement) {
+            predictionElement.innerHTML = `
+                <h3>Error</h3>
+                <p>Failed to get prediction. Please try again.</p>
+            `;
+        }
     }
 }
