@@ -1,94 +1,79 @@
-# MDST Traffic Accident Prediction
+# Accident Severity Prediction Map
 
-A **machine learning model** trained on real-world traffic data to predict accident severity.
+A web application that predicts accident severity based on location and various factors using machine learning.
 
 ## Features
-- **Inputs:** Latitude, Longitude, Weather, Time, Traffic Conditions...
-- **Output:** Predicted Accident Severity (from 1 to 4).
-- Implemented in Python with a Neural Network using PyTorch.
 
-## Deliverables
-1. **Cleaned and Preprocessed Dataset:** Combines accident and traffic flow data.
-2. **Visualizations:** Explories relationships between accident severity and key features.
-3. **Trained Neural Network Model:** Capable of predicting accident severity.
-4. **Interactive Web Application:**
-   - A map-based interface for location selection.
-   - Input fields for relevant feature variables.
-   - Real-time accident severity predictions displayed to users.
+- Interactive map interface
+- Real-time accident severity prediction
+- Road type detection using OpenStreetMap API
+- Adjustable parameters:
+  - Traffic signal presence
+  - Crossing presence
+  - Highway status
+  - Distance
+  - Start hour
+  - Start month
+  - Accident duration
 
-## Project Agenda
-| Week  | Date   | Agenda                          |
-|-------|--------|---------------------------------|
-| 1     | 1/26   | Icebreakers + Environment Setup |
-| 2     | 2/2    | Exploratory Data Analysis (EDA) |
-| 3     | 2/9    | Neural Nets                     |
-| 4     | 2/16   | PyTorch                         |
-| 5     | 2/23   | Basic NN Model                  |
-| -     | -      | Spring Break                    |
-| -     | -      | Spring Break                    |
-| 6     | 3/16   | Model Development               |
-| 7     | 3/23   | Model Development               |
-| 8     | 3/30   | Interactive Map                 |
-| 9     | 4/16   | Interactive Map                 |
-| 10    | 4/23   | Final Expo Prep                 |
+## Installation
 
-## Setup Instructions
-
-### 1. Clone the Repository
+1. Clone the repository:
 ```bash
-git clone <repository_url>
-cd <repository_name>
+git clone https://github.com/yourusername/accident-severity-prediction.git
+cd accident-severity-prediction
 ```
 
-### 2. Create a Virtual Environment
+2. Create and activate a virtual environment:
 ```bash
 python -m venv venv
-source venv/bin/activate   # macOS/Linux
-venv\Scripts\activate    # Windows
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-### 3. Install Dependencies
-Install the required Python packages:
+3. Install dependencies:
 ```bash
-pip install -r requirements.txt
+pip install flask flask-cors torch numpy folium requests
 ```
 
-### 4. Verify Installation
-Run the following to ensure the environment is set up correctly:
+4. Download the pre-trained model:
+- Place the model file (`best_accident_severity_model.pth`) in the project root directory
+
+## Usage
+
+1. Run the application:
 ```bash
-python3 -m pip list
+python map.py
 ```
 
-## Running the Project
-1. **Data Preprocessing:** Execute the preprocessing script to clean and combine datasets.
-```bash
+2. Open your browser and navigate to:
+```
+http://127.0.0.1:8080
 ```
 
-2. **Training the Model:** Train the neural network model using PyTorch.
-```bash
+3. Click on the map to get predictions for specific locations.
+
+## Project Structure
+
+```
+├── map.py              # Main application file
+├── templates/          # HTML templates
+│   └── index.html     # Main page template
+├── static/            # Static files
+│   ├── css/          # CSS styles
+│   └── js/           # JavaScript files
+└── README.md          # Project documentation
 ```
 
-3. **Visualizations:** Generate and explore visual insights.
-```bash
-```
+## Dependencies
 
-4. **Web Application:** Launch the interactive app.
-```bash
-```
+- Flask
+- Flask-CORS
+- PyTorch
+- NumPy
+- Folium
+- Requests
 
-## Requirements
-The required Python packages are listed in `requirements.txt`:
-```
-pandas
-numpy
-matplotlib
-seaborn
-scikit-learn
-scipy
-torch
-torchvision
-```
+## License
 
-### Note:
-For PyTorch and torchvision, ensure you install the versions suitable for your hardware (e.g., CPU or GPU with CUDA). Refer to the [PyTorch Installation Guide](https://pytorch.org/get-started/locally/).
+This project is licensed under the MIT License - see the LICENSE file for details.
 
