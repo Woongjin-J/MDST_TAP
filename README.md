@@ -42,7 +42,7 @@ pip install flask flask-cors torch numpy folium requests
 
 1. Run the application:
 ```bash
-python map.py
+python app.py
 ```
 
 2. Open your browser and navigate to:
@@ -55,9 +55,8 @@ http://127.0.0.1:8080
 ## Project Structure
 
 ```
-├── map.py              # Main application file
-├── templates/          # HTML templates
-│   └── index.html     # Main page template
+├── app.py              # Main application file
+├── index.html          # Main page template
 ├── static/            # Static files
 │   ├── css/          # CSS styles
 │   └── js/           # JavaScript files

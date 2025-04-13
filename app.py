@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 import torch.nn as nn
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, send_file, send_from_directory
 from flask_cors import CORS
 import os
 import socket
@@ -60,7 +60,7 @@ except Exception as e:
     exit(1)
 
 # Create Flask app
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 CORS(app, resources={
     r"/*": {
         "origins": "*",
@@ -150,7 +150,15 @@ def transform_features(raw):
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    try:
+        return send_file('index.html')
+    except Exception as e:
+        logger.error(f"Error loading index.html: {str(e)}")
+        return f"Error: Could not load the HTML file. {str(e)}", 500
+
+@app.route('/static/<path:path>')
+def send_static(path):
+    return send_from_directory('static', path)
 
 @app.route('/predict', methods=['POST', 'OPTIONS'])
 def predict():
