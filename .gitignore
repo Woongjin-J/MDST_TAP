@@ -39,7 +39,7 @@ ENV/
 Thumbs.db
 
 # Model files
-*.pth
+accident_severity_model.pth
 *.pt
 *.h5
 *.pkl
