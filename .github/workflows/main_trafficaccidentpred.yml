@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v4
@@ -29,17 +30,25 @@ jobs:
           pip install setuptools wheel
           pip install -r requirements.txt
 
+      - name: Create deployment package
+        run: |
+          mkdir deploy
+          cp -r * deploy/ 2>/dev/null || :
+          cp -r .* deploy/ 2>/dev/null || :
+          cd deploy
+          rm -rf venv __pycache__ .git .github
+          zip -r ../package.zip .
+
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
         with:
           name: python-app
-          path: |
-            .
-            !venv/
+          path: package.zip
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
+    timeout-minutes: 10
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
@@ -51,11 +60,6 @@ jobs:
           name: python-app
           path: .
 
-      - name: Log in to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
@@ -63,3 +67,5 @@ jobs:
           app-name: 'trafficAccidentPred'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_6FF96F0F5D2E4E2F9F5F5F5F5F5F5F5F }}
+          package: package.zip
+          clean: true
